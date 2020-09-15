@@ -1,3 +1,12 @@
+package main
+
+import (
+	"fmt"
+	"log"
+	"os/exec"
+	"runtime"
+	"strings"
+)
 
 func FormatPath(s string) string {
 	switch runtime.GOOS {
@@ -6,12 +15,12 @@ func FormatPath(s string) string {
 	case "darwin", "linux":
 		return strings.Replace(s, "\\", "/", -1)
 	default:
-		logger.Println("only support linux,windows,darwin, but os is " + runtime.GOOS)
+		panic("only support linux,windows,darwin, but os is " + runtime.GOOS)
 		return s
 	}
 }
 
-func copyDir(src string, dest string) {
+func CopyDir(src string, dest string) (bool, error) {
 	src = FormatPath(src)
 	dest = FormatPath(dest)
 	log.Println(src)
@@ -24,12 +33,14 @@ func copyDir(src string, dest string) {
 		cmd = exec.Command("xcopy", src, dest, "/I", "/E")
 	case "darwin", "linux":
 		cmd = exec.Command("cp", "-R", src, dest)
+	default:
+		panic("not support os")
 	}
 
 	outPut, e := cmd.Output()
 	if e != nil {
-		logger.Println(e.Error())
-		return
+		return false, e
 	}
-	fmt.Println(string(outPut))
+	fmt.Println(outPut)
+	return true, nil
 }
